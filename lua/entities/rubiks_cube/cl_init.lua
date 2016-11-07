@@ -139,13 +139,17 @@ function ENT:DrawDebug()
 
     cam.Start2D()
         local pos = self:GetPos():ToScreen()
-        draw.SimpleText(self.rubiks_name, "TargetID", pos.x, pos.y, Color(255, 255, 255))
+        draw.SimpleText("rubiks_" .. self.rubiks_name .. "(" .. self:EntIndex() .. ")", "TargetID", pos.x, pos.y, Color(255, 255, 255))
     cam.End2D()
 end
 
 
 --/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+local nullify = not file.Exists("models/rubiks/cube_core.mdl", "GAME")
+
 function ENT:Draw()
+    if nullify then self:DrawDebug() return end
+
     if halo.RenderedEntity() == self then return end
 
     if not self.rubiks then return end

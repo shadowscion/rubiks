@@ -83,9 +83,9 @@ net.Receive("RUBIKS.HINT", function()
     local msg = net.ReadString()
 
     if hints[msg] then
-        notification.AddLegacy("Use the context menu (hold C) to reset or scramble the puzzle.", NOTIFY_HINT, 9)
+        notification.AddLegacy("Use the context menu (hold C) to reset or scramble the puzzle.", NOTIFY_HINT, 8)
         for i = #hints[msg], 1, -1 do
-            notification.AddLegacy(hints[msg][i], NOTIFY_HINT, 9)
+            notification.AddLegacy(hints[msg][i], NOTIFY_HINT, 8)
         end
     end
 end)
