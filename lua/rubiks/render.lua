@@ -1,4 +1,5 @@
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
+---------------------------------------------------------------
 local RUBIKS = RUBIKS
 
 RUBIKS.RENDER = RUBIKS.RENDER or nil
@@ -14,12 +15,12 @@ timer.Create("RUBIKS.Redraw", 1, 0, function()
 end)
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+----------------------------------------------------------------
 CreateClientConVar("rubiks_draw_hud", "1", true, false)
-CreateClientConVar("rubiks_animation_speed", "1", true, false)
+CreateClientConVar("rubiks_animation_speed", "2", true, false)
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+----------------------------------------------------------------
 RUBIKS.ANIM_SPEED_MIN = 1/10
 RUBIKS.ANIM_SPEED_MAX = 5
 

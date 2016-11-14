@@ -1,7 +1,7 @@
 "VertexLitGeneric"
 {
 	"$basetexture"    "models/debug/debugwhite"
-	"$envmap"         "rubiks/envmap"
+	"$envmap"         "env_cubemap" //"rubiks/envmap"
 	"$envmapcontrast" "0.1"
 	"$envmaptint"     "[0.5 0.5 0.5]"
 	"$color2"         "[1 1 1]"

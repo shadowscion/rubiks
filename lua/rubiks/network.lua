@@ -1,45 +1,42 @@
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
+---------------------------------------------------------------
 local RUBIKS = RUBIKS
 local HELPER = RUBIKS.HELPER
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+----------------------------------------------------------------
 if SERVER then
     util.AddNetworkString("RUBIKS.SYNC")
     util.AddNetworkString("RUBIKS.MOVE")
     util.AddNetworkString("RUBIKS.HINT")
 
     hook.Add("KeyPress", "RUBIKS.KeyPress", function(ply, key)
-        local weapon = ply:GetActiveWeapon():GetClass()
-        if weapon == "weapon_physgun" or weapon == "gmod_tool" then return end
+        if not IsValid(ply) or not ply:Alive() then return end
+
+        local weapon = ply:GetActiveWeapon()
+        if not IsValid(weapon) then return end
+        if weapon:GetClass() == "weapon_physgun" or weapon:GetClass() == "gmod_tool" then return end
 
         if key ~= IN_ATTACK and key ~= IN_ATTACK2 then return end
 
         local trace = ply:GetEyeTrace()
-        if not trace.Entity.RUBIKS or not trace.Entity.HandleInput then return end
+        if not trace.Entity.RUBIKS_TYPE or not trace.Entity.HandleInput then return end
 
         if not HELPER.IsOwner(ply, trace.Entity) then return end
 
-        trace.Entity:HandleInput(ply, trace)
+        local data = trace.Entity:HandleInput(ply, trace)
+        if data then trace.Entity:AddHistory(data) end
     end)
 
     net.Receive("RUBIKS.SYNC", function(len, ply)
         local self = net.ReadEntity()
-        if not IsValid(self) or not self.RUBIKS then return end
+        if not IsValid(self) or not self.RUBIKS_TYPE then return end
 
-        self.rubiks_history = string.Trim(self.rubiks_history or "")
-
-        local send = {}
-        for i in string.gmatch(self.rubiks_history, "%S+") do
-            table.insert(send, {
-                key = string.match(i, "%a+"),
-                rot = string.match(i, "'") and 1 or -1,
-            })
-        end
+        self.RUBIKS_HISTORY = self.RUBIKS_HISTORY or {}
 
         net.Start("RUBIKS.SYNC")
             net.WriteEntity(self)
-            net.WriteTable(send)
+            net.WriteTable(self.RUBIKS_HISTORY)
         net.Send(ply)
     end)
 
@@ -47,10 +44,10 @@ if SERVER then
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+----------------------------------------------------------------
 net.Receive("RUBIKS.MOVE", function()
     local self = net.ReadEntity()
-    if not IsValid(self) or not self.RUBIKS then return end
+    if not IsValid(self) or not self.RUBIKS_TYPE then return end
 
     local data = net.ReadTable() or {}
     for i, rotation in ipairs(data) do
@@ -59,12 +56,12 @@ net.Receive("RUBIKS.MOVE", function()
 end)
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+----------------------------------------------------------------
 net.Receive("RUBIKS.SYNC", function()
     local self = net.ReadEntity()
-    if not IsValid(self) or not self.RUBIKS then return end
+    if not IsValid(self) or not self.RUBIKS_TYPE then return end
 
-    self:ResetRubiks()
+    self:Reset()
 
     local data = net.ReadTable() or {}
     for i, rotation in ipairs(data) do
@@ -73,10 +70,11 @@ net.Receive("RUBIKS.SYNC", function()
 end)
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+----------------------------------------------------------------
 local hints = {
-    ["cube"] = { "Aim at a side and use Mouse1 or Mouse2 to rotate it", "Hold Shift for more advanced control." },
-    ["tetra"] = { "Aim at a median and use Mouse1 or Mouse2 to rotate it." },
+    ["CUBE"] = { "Aim at a side and use Mouse1 or Mouse2 to rotate it", "Hold Shift for more advanced control." },
+    ["TETRA"] = { "Aim at a median and use Mouse1 or Mouse2 to rotate it." },
+    ["SKEWB"] = { "Aim at a corner and use Mouse1 to rotate it."}
 }
 
 net.Receive("RUBIKS.HINT", function()

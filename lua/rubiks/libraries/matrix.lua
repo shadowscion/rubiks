@@ -1,11 +1,12 @@
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
+---------------------------------------------------------------
 local RUBIKS = RUBIKS
 local MATRIX = {}
 
 RUBIKS.MATRIX = MATRIX
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function MATRIX.FromTable(tbl)
     local length = math.sqrt(#tbl)
     local index = 0
@@ -23,7 +24,7 @@ function MATRIX.FromTable(tbl)
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function MATRIX.ToTable(mat)
     local tbl = {}
     local length = #mat
@@ -36,7 +37,7 @@ function MATRIX.ToTable(mat)
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function MATRIX.Transpose(mat)
     local length = #mat
     for row = 1, length do
@@ -50,7 +51,7 @@ function MATRIX.Transpose(mat)
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function MATRIX.ReverseRows(mat)
     local length = #mat
     for row = 1, length do
@@ -64,7 +65,7 @@ function MATRIX.ReverseRows(mat)
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function MATRIX.ReverseColumns(mat)
     local length = #mat
     for col = 1, length do

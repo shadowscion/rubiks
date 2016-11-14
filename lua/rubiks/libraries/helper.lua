@@ -1,11 +1,12 @@
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
+---------------------------------------------------------------
 local RUBIKS = RUBIKS
 local HELPER = {}
 
 RUBIKS.HELPER = HELPER
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function HELPER.IsOwner(ply, ent)
     if CLIENT then return true end
 
@@ -25,7 +26,7 @@ function HELPER.IsOwner(ply, ent)
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function HELPER.SnapVector(vec, snap)
     vec = vec/snap
     vec = Vector(math.Round(vec.x), math.Round(vec.y), math.Round(vec.z))
@@ -33,59 +34,11 @@ function HELPER.SnapVector(vec, snap)
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
-function HELPER.Scrambler(sequence, len)
-    local match = string.lower(string.match(sequence, "%a+"))
-    local size = math.floor(tonumber(string.match(sequence, "%d+"))*0.5)
-    local len = len or 30
-
-    local moves = {}
-    for i in string.gmatch(match, "%a") do
-        for j = 1, size do
-            table.insert(moves, string.rep(i, j))
-            table.insert(moves, string.rep(i, j) .. "'")
-            table.insert(moves, string.rep(i, j) .. "2")
-        end
-    end
-
-    local scramble = ""
-    local prev_move = ""
-
-    local move_list = {}
-    for i = 1, len do
-        local next_move = moves[math.floor(math.random(1, #moves))]
-        while string.match(next_move, "%a+") == string.match(prev_move, "%a+") do
-            next_move = moves[math.floor(math.random(1, #moves))]
-        end
-
-        local move = {
-            key = string.match(next_move, "%a+"),
-            rot = string.match(next_move, "'") and 1 or -1,
-        }
-
-        if string.match(next_move, "2") then
-            table.insert(move_list, move)
-            table.insert(move_list, move)
-
-            scramble = scramble .. move.key .. " "
-            scramble = scramble .. move.key .. " "
-        else
-            table.insert(move_list, move)
-            scramble = scramble .. next_move .. " "
-        end
-
-        prev_move = next_move
-    end
-
-    return move_list, string.Trim(scramble)
-end
-
-
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 if SERVER then return end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function HELPER.ShiftL(t)
     table.insert(t, table.remove(t, 1))
 end
@@ -95,13 +48,13 @@ function HELPER.ShiftR(t)
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 function HELPER.SmoothStep(t)
     return t*t*t*(t*(t*6 - 15) + 10)
 end
 
 
---/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
+---------------------------------------------------------------
 local pi = math.pi
 local rad2deg = 180 / pi
 local deg2rad = pi / 180
