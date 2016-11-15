@@ -31,30 +31,19 @@ function TYPE.GenerateData()
     }
 
     if CLIENT then
-        data.MASTER = {}
+        if TYPE.GenerateClientData then
+            TYPE.GenerateClientData(data)
+        else
+            data.MASTER = {}
 
-        data.CREATE = function()
-            local puzzle = {}
-            return puzzle
+            data.CREATE = function()
+                local puzzle = {}
+                return puzzle
+            end
         end
     end
 
     return data
-end
-
-
-----------------------------------------------------------------
-function META:BuildPhysics()
-    if not self.RUBIKS_DATA then return end
-
-    self:PhysicsInitConvex(self.RUBIKS_DATA.HULL)
-    self:SetMoveType(MOVETYPE_CUSTOM)
-    self:SetSolid(SOLID_VPHYSICS)
-    self:EnableCustomCollisions(true)
-
-    if CLIENT then
-        self:SetRenderBounds(self.RUBIKS_DATA.MINS, self.RUBIKS_DATA.MAXS)
-    end
 end
 
 

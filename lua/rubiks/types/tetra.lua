@@ -34,208 +34,15 @@ function TYPE.GenerateData(size)
     }
 
     if CLIENT then
-        data.MASTER = {
-            f = {
-                inner = {  },
-                outer = { 22 },
-                dir   = -Vector(0.9428, 0, 0.3333),
-            },
-            ff = {
-                inner = { 11, 15, 20 },
-                outer = { 7, 19, 21 },
-                dir   = -Vector(0.9428, 0, 0.3333),
-            },
-            l = {
-                inner = {  },
-                outer = { 18 },
-                dir   = Vector(-0.4714, -0.8165, 0.3333),
-            },
-            ll = {
-                inner = { 10, 14, 17 },
-                outer = { 6, 13, 21 },
-                dir   = Vector(-0.4714, -0.8165, 0.3333),
-            },
-            r = {
-                inner = {  },
-                outer = { 8 },
-                dir   = -Vector(-0.4714, 0.8165, 0.3333),
-            },
-            rr = {
-                inner = { 9, 12, 16 },
-                outer = { 2, 13, 19 },
-                dir   = -Vector(-0.4714, 0.8165, 0.3333),
-            },
-            u = {
-                inner = {  },
-                outer = { 1 },
-                dir   = Vector(0, 0, -1),
-            },
-            uu = {
-                inner = { 3, 4, 5 },
-                outer = { 2, 6, 7 },
-                dir   = Vector(0, 0, -1),
-            },
-        }
+        if TYPE.GenerateClientData then
+            TYPE.GenerateClientData(data)
+        else
+            data.MASTER = {}
 
-        for _, v in pairs(data.MASTER) do
-            if #v.inner > 0 then
-                v.inner_ccw = table.Copy(v.inner)
-                v.inner_cw  = table.Copy(v.inner)
-
-                HELPER.ShiftL(v.inner_ccw)
-                HELPER.ShiftR(v.inner_cw)
+            data.CREATE = function()
+                local puzzle = {}
+                return puzzle
             end
-            if #v.outer > 1 then
-                v.outer_ccw = table.Copy(v.outer)
-                v.outer_cw  = table.Copy(v.outer)
-
-                HELPER.ShiftL(v.outer_ccw)
-                HELPER.ShiftR(v.outer_cw)
-            end
-        end
-
-        data.CREATE = function()
-            local puzzle = {
-                [1] = {
-                    id = 1,
-                    pos = Vector(0, 0, 2.85),
-                    ang = Angle(0, 0, 0),
-                    sub = { [1] = "f", [2] = "r", [3] = "l",  },
-                },
-                [2] = {
-                    id = 2,
-                    pos = Vector(0.6737, -1.1745, 0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [1] = "f", [3] = "l",  },
-                },
-                [3] = {
-                    id = 3,
-                    pos = Vector(0.4514, 0, 1.5785),
-                    ang = Angle(-38.942, 0, -180),
-                    sub = { [1] = "f",  },
-                },
-                [4] = {
-                    id = 4,
-                    pos = Vector(-0.2257, 0.391, 1.5785),
-                    ang = Angle(18.3166, -125.8174, 145.014),
-                    sub = { [2] = "r",  },
-                },
-                [5] = {
-                    id = 5,
-                    pos = Vector(-0.2257, -0.391, 1.5785),
-                    ang = Angle(18.3166, 125.8174, -145.014),
-                    sub = { [3] = "l",  },
-                },
-                [6] = {
-                    id = 6,
-                    pos = Vector(0.6737, 1.1745, 0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [1] = "f", [2] = "r",  },
-                },
-                [7] = {
-                    id = 7,
-                    pos = Vector(-1.3473, 0, 0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [2] = "r", [3] = "l",  },
-                },
-                [8] = {
-                    id = 8,
-                    pos = Vector(1.3473, -2.349, -0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [1] = "f", [3] = "l", [4] = "d" },
-                },
-                [9] = {
-                    id = 9,
-                    pos = Vector(1.1251, -1.1745, -0.3215),
-                    ang = Angle(-38.942, 0, -180),
-                    sub = { [1] = "f",  },
-                },
-                [10] = {
-                    id = 10,
-                    pos = Vector(0.4546, 1.5616, -0.3215),
-                    ang = Angle(18.3166, -125.8174, 145.014),
-                    sub = { [2] = "r",  },
-                },
-                [11] = {
-                    id = 11,
-                    pos = Vector(-1.5797, -0.3871, -0.3215),
-                    ang = Angle(18.3166, 125.8174, -145.014),
-                    sub = { [3] = "l",  },
-                },
-                [12] = {
-                    id = 12,
-                    pos = Vector(0.6737, -1.1745, -0.95),
-                    ang = Angle(0, 180, 0),
-                    sub = { [4] = "d" },
-                },
-                [13] = {
-                    id = 13,
-                    pos = Vector(1.3473, 0, -0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [1] = "f", [4] = "d" },
-                },
-                [14] = {
-                    id = 14,
-                    pos = Vector(1.1251, 1.1745, -0.3215),
-                    ang = Angle(-38.942, 0, -180),
-                    sub = { [1] = "f",  },
-                },
-                [15] = {
-                    id = 15,
-                    pos = Vector(-1.5797, 0.3871, -0.3215),
-                    ang = Angle(18.3166, -125.8174, 145.014),
-                    sub = { [2] = "r",  },
-                },
-                [16] = {
-                    id = 16,
-                    pos = Vector(0.4546, -1.5616, -0.3215),
-                    ang = Angle(18.3166, 125.8174, -145.014),
-                    sub = { [3] = "l",  },
-                },
-                [17] = {
-                    id = 17,
-                    pos = Vector(0.6737, 1.1745, -0.95),
-                    ang = Angle(0, 180, 0),
-                    sub = { [4] = "d" },
-                },
-                [18] = {
-                    id = 18,
-                    pos = Vector(1.3473, 2.349, -0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [1] = "f", [2] = "r", [4] = "d" },
-                },
-                [19] = {
-                    id = 19,
-                    pos = Vector(-0.6737, -1.1745, -0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [3] = "l", [4] = "d" },
-                },
-                [20] = {
-                    id = 20,
-                    pos = Vector(-1.3473, 0, -0.95),
-                    ang = Angle(0, 180, 0),
-                    sub = { [4] = "d" },
-                },
-                [21] = {
-                    id = 21,
-                    pos = Vector(-0.6737, 1.1745, -0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [2] = "r", [4] = "d" },
-                },
-                [22] = {
-                    id = 22,
-                    pos = Vector(-2.6947, 0, -0.95),
-                    ang = Angle(0, 0, 0),
-                    sub = { [2] = "r", [3] = "l", [4] = "d" },
-                },
-            }
-
-            local scale = 6
-            for k, v in ipairs(puzzle) do
-                v.pos = v.pos*scale
-            end
-
-            return puzzle
         end
     end
 
@@ -244,16 +51,24 @@ end
 
 
 ----------------------------------------------------------------
-function META:BuildPhysics()
-    if not self.RUBIKS_DATA then return end
+if SERVER then
+    function META:HandleInput(ply, trace)
+        local side, dir = self:GetTetraTrace(trace)
+        if not side or not dir then return end
 
-    self:PhysicsInitConvex(self.RUBIKS_DATA.HULL)
-    self:SetMoveType(MOVETYPE_CUSTOM)
-    self:SetSolid(SOLID_VPHYSICS)
-    self:EnableCustomCollisions(true)
+        local send = {
+            key = side,
+            rot = ply:KeyDown(IN_ATTACK) and dir or -dir,
+        }
 
-    if CLIENT then
-        self:SetRenderBounds(self.RUBIKS_DATA.MINS, self.RUBIKS_DATA.MAXS)
+        if not send.key or not send.rot then return end
+
+        net.Start("RUBIKS.MOVE")
+            net.WriteEntity(self)
+            net.WriteTable({ send })
+        net.Broadcast()
+
+        return send
     end
 end
 
@@ -323,28 +138,6 @@ end
 
 
 ----------------------------------------------------------------
-if SERVER then
-    function META:HandleInput(ply, trace)
-        local side, dir = self:GetTetraTrace(trace)
-        if not side or not dir then return end
-
-        local send = {
-            key = side,
-            rot = ply:KeyDown(IN_ATTACK) and dir or -dir,
-        }
-
-        if not send.key or not send.rot then return end
-
-        net.Start("RUBIKS.MOVE")
-            net.WriteEntity(self)
-            net.WriteTable({ send })
-        net.Broadcast()
-
-        return send
-    end
-end
-
-
 ----------------------------------------------------------------
 if SERVER then return end
 
@@ -420,7 +213,7 @@ function META:DoRotation()
     local PUZZLE = self.RUBIKS_PUZZLE
     local TASK = self.RUBIKS_TASK
 
-    local rate = math.min(#self.RUBIKS_QUEUE + (RUBIKS.ANIM_SPEED or 1) + 1, 6)
+    local rate = self:GetAnimationSpeed() or 1
     TASK.tween = math.min(TASK.tween + FrameTime()*rate, 1)
 
     local rotation = HELPER.SmoothStep(TASK.tween)*120
@@ -479,4 +272,212 @@ function META:Debug()
         local pos = self:GetPos():ToScreen()
         draw.SimpleText(self, "TargetIDSmall", pos.x, pos.y, Color(255, 255, 255), 1)
     cam.End2D()
+end
+
+
+----------------------------------------------------------------
+function TYPE.GenerateClientData(data)
+    data.MASTER = {
+        f = {
+            inner = {  },
+            outer = { 22 },
+            dir   = -Vector(0.9428, 0, 0.3333),
+        },
+        ff = {
+            inner = { 11, 15, 20 },
+            outer = { 7, 19, 21 },
+            dir   = -Vector(0.9428, 0, 0.3333),
+        },
+        l = {
+            inner = {  },
+            outer = { 18 },
+            dir   = Vector(-0.4714, -0.8165, 0.3333),
+        },
+        ll = {
+            inner = { 10, 14, 17 },
+            outer = { 6, 13, 21 },
+            dir   = Vector(-0.4714, -0.8165, 0.3333),
+        },
+        r = {
+            inner = {  },
+            outer = { 8 },
+            dir   = -Vector(-0.4714, 0.8165, 0.3333),
+        },
+        rr = {
+            inner = { 9, 12, 16 },
+            outer = { 2, 13, 19 },
+            dir   = -Vector(-0.4714, 0.8165, 0.3333),
+        },
+        u = {
+            inner = {  },
+            outer = { 1 },
+            dir   = Vector(0, 0, -1),
+        },
+        uu = {
+            inner = { 3, 4, 5 },
+            outer = { 2, 6, 7 },
+            dir   = Vector(0, 0, -1),
+        },
+    }
+
+    for _, v in pairs(data.MASTER) do
+        if #v.inner > 0 then
+            v.inner_ccw = table.Copy(v.inner)
+            v.inner_cw  = table.Copy(v.inner)
+
+            HELPER.ShiftL(v.inner_ccw)
+            HELPER.ShiftR(v.inner_cw)
+        end
+        if #v.outer > 1 then
+            v.outer_ccw = table.Copy(v.outer)
+            v.outer_cw  = table.Copy(v.outer)
+
+            HELPER.ShiftL(v.outer_ccw)
+            HELPER.ShiftR(v.outer_cw)
+        end
+    end
+
+    data.CREATE = function()
+        local puzzle = {
+            [1] = {
+                id = 1,
+                pos = Vector(0, 0, 2.85),
+                ang = Angle(0, 0, 0),
+                sub = { [1] = "f", [2] = "r", [3] = "l",  },
+            },
+            [2] = {
+                id = 2,
+                pos = Vector(0.6737, -1.1745, 0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [1] = "f", [3] = "l",  },
+            },
+            [3] = {
+                id = 3,
+                pos = Vector(0.4514, 0, 1.5785),
+                ang = Angle(-38.942, 0, -180),
+                sub = { [1] = "f",  },
+            },
+            [4] = {
+                id = 4,
+                pos = Vector(-0.2257, 0.391, 1.5785),
+                ang = Angle(18.3166, -125.8174, 145.014),
+                sub = { [2] = "r",  },
+            },
+            [5] = {
+                id = 5,
+                pos = Vector(-0.2257, -0.391, 1.5785),
+                ang = Angle(18.3166, 125.8174, -145.014),
+                sub = { [3] = "l",  },
+            },
+            [6] = {
+                id = 6,
+                pos = Vector(0.6737, 1.1745, 0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [1] = "f", [2] = "r",  },
+            },
+            [7] = {
+                id = 7,
+                pos = Vector(-1.3473, 0, 0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [2] = "r", [3] = "l",  },
+            },
+            [8] = {
+                id = 8,
+                pos = Vector(1.3473, -2.349, -0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [1] = "f", [3] = "l", [4] = "d" },
+            },
+            [9] = {
+                id = 9,
+                pos = Vector(1.1251, -1.1745, -0.3215),
+                ang = Angle(-38.942, 0, -180),
+                sub = { [1] = "f",  },
+            },
+            [10] = {
+                id = 10,
+                pos = Vector(0.4546, 1.5616, -0.3215),
+                ang = Angle(18.3166, -125.8174, 145.014),
+                sub = { [2] = "r",  },
+            },
+            [11] = {
+                id = 11,
+                pos = Vector(-1.5797, -0.3871, -0.3215),
+                ang = Angle(18.3166, 125.8174, -145.014),
+                sub = { [3] = "l",  },
+            },
+            [12] = {
+                id = 12,
+                pos = Vector(0.6737, -1.1745, -0.95),
+                ang = Angle(0, 180, 0),
+                sub = { [4] = "d" },
+            },
+            [13] = {
+                id = 13,
+                pos = Vector(1.3473, 0, -0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [1] = "f", [4] = "d" },
+            },
+            [14] = {
+                id = 14,
+                pos = Vector(1.1251, 1.1745, -0.3215),
+                ang = Angle(-38.942, 0, -180),
+                sub = { [1] = "f",  },
+            },
+            [15] = {
+                id = 15,
+                pos = Vector(-1.5797, 0.3871, -0.3215),
+                ang = Angle(18.3166, -125.8174, 145.014),
+                sub = { [2] = "r",  },
+            },
+            [16] = {
+                id = 16,
+                pos = Vector(0.4546, -1.5616, -0.3215),
+                ang = Angle(18.3166, 125.8174, -145.014),
+                sub = { [3] = "l",  },
+            },
+            [17] = {
+                id = 17,
+                pos = Vector(0.6737, 1.1745, -0.95),
+                ang = Angle(0, 180, 0),
+                sub = { [4] = "d" },
+            },
+            [18] = {
+                id = 18,
+                pos = Vector(1.3473, 2.349, -0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [1] = "f", [2] = "r", [4] = "d" },
+            },
+            [19] = {
+                id = 19,
+                pos = Vector(-0.6737, -1.1745, -0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [3] = "l", [4] = "d" },
+            },
+            [20] = {
+                id = 20,
+                pos = Vector(-1.3473, 0, -0.95),
+                ang = Angle(0, 180, 0),
+                sub = { [4] = "d" },
+            },
+            [21] = {
+                id = 21,
+                pos = Vector(-0.6737, 1.1745, -0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [2] = "r", [4] = "d" },
+            },
+            [22] = {
+                id = 22,
+                pos = Vector(-2.6947, 0, -0.95),
+                ang = Angle(0, 0, 0),
+                sub = { [2] = "r", [3] = "l", [4] = "d" },
+            },
+        }
+
+        local scale = 6
+        for k, v in ipairs(puzzle) do
+            v.pos = v.pos*scale
+        end
+
+        return puzzle
+    end
 end

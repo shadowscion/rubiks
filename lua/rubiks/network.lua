@@ -72,9 +72,10 @@ end)
 
 ----------------------------------------------------------------
 local hints = {
-    ["CUBE"] = { "Aim at a side and use Mouse1 or Mouse2 to rotate it", "Hold Shift for more advanced control." },
-    ["TETRA"] = { "Aim at a median and use Mouse1 or Mouse2 to rotate it." },
-    ["SKEWB"] = { "Aim at a corner and use Mouse1 to rotate it."}
+    ["CUBE"]     = { "Aim at a side and use Mouse1 or Mouse2 to rotate it", "Hold Shift for more advanced control." },
+    ["TETRA"]    = { "Aim at a median and use Mouse1 or Mouse2 to rotate it." },
+    ["MEGAMINX"] = { "Aim at a side and ouse Mouse1 or Mouse2 to rotate it." },
+    ["SKEWB"]    = { "Aim at a corner and use Mouse1 to rotate it."},
 }
 
 net.Receive("RUBIKS.HINT", function()

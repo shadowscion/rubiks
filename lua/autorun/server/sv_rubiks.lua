@@ -15,7 +15,7 @@ AddCSLuaFile("rubiks/render.lua")
 AddCSLuaFile("rubiks/types/cube.lua")
 AddCSLuaFile("rubiks/types/tetra.lua")
 AddCSLuaFile("rubiks/types/skewb.lua")
-
+AddCSLuaFile("rubiks/types/megaminx.lua")
 
 ----------------------------------------------------------------
 RUBIKS = { TYPES = {} }
@@ -30,3 +30,4 @@ include("rubiks/network.lua")
 include("rubiks/types/cube.lua")
 include("rubiks/types/tetra.lua")
 include("rubiks/types/skewb.lua")
+include("rubiks/types/megaminx.lua")

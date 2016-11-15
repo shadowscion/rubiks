@@ -10,17 +10,6 @@ RUBIKS.TYPES["CUBE"] = TYPE
 
 
 ----------------------------------------------------------------
-local keys = {
-    f = { id = 1, dir = Vector(1, 0, 0) },
-    b = { id = 2, dir = Vector(-1, 0, 0) },
-    r = { id = 3, dir = Vector(0, 1, 0) },
-    l = { id = 4, dir = Vector(0, -1, 0) },
-    d = { id = 5, dir = Vector(0, 0, -1) },
-    u = { id = 6, dir = Vector(0, 0, 1) },
-}
-
-
-----------------------------------------------------------------
 function TYPE.GenerateData(size)
     local size   = math.Clamp(size or 2, 2, 6)
     local length = size*6
@@ -49,109 +38,15 @@ function TYPE.GenerateData(size)
     }
 
     if CLIENT then
-        data.MASTER = {}
+        if TYPE.GenerateClientData then
+            TYPE.GenerateClientData(data)
+        else
+            data.MASTER = {}
 
-        local size_f = math.floor(size*0.5)
-        local size_c = math.ceil(size*0.5)
-
-        for k, side in pairs(keys) do
-            for l = 1, size_f do
-                local key = string.rep(k, l)
-
-                data.MASTER[key] = {
-                    map = {},
-                    ccw = {},
-                    cw  = {},
-                    dir = side.dir,
-                }
-
-                if l == 1 then
-                    data.MASTER[key].id = side.id
-                end
+            data.CREATE = function()
+                local puzzle = {}
+                return puzzle
             end
-        end
-
-        local index = 0
-        for x = 1, size do
-            for z = 1, size do
-                for y = 1, size do
-                    local ignore = (x > 1 and x < size) and (z > 1 and z < size) and (y > 1 and y < size)
-
-                    index = index + 1
-                    for key, _ in pairs(keys) do
-                        local xyz = (key == "f" and x or key == "b" and -x or key == "u" and z or key == "d" and -z or key == "l" and y or key == "r" and -y)
-                        local abs = math.abs(xyz)
-
-                        if xyz > 0 and abs <= size_f then
-                            local id = string.rep(key, xyz)
-                            table.insert(data.MASTER[id].map, ignore and 0 or index)
-                        end
-                        if xyz < 0 and abs > size_c then
-                            local id = string.rep(key, size + xyz + 1)
-                            table.insert(data.MASTER[id].map, ignore and 0 or index)
-                        end
-                    end
-                end
-            end
-        end
-
-        for key, layer in pairs(data.MASTER) do
-            local mat = RUBIKS.MATRIX.FromTable(layer.map)
-            local side = string.sub(key, 1, 1)
-
-                if side == "b" then RUBIKS.MATRIX.ReverseRows(mat)
-            elseif side == "u" then RUBIKS.MATRIX.ReverseColumns(mat)
-            elseif side == "r" then RUBIKS.MATRIX.Transpose(mat)
-            elseif face == "l" then
-                RUBIKS.MATRIX.Transpose(mat)
-                RUBIKS.MATRIX.ReverseRows(mat)
-            end
-
-            local ccw = table.Copy(mat)
-                  RUBIKS.MATRIX.Transpose(ccw)
-                  RUBIKS.MATRIX.ReverseColumns(ccw)
-
-            local cw = table.Copy(mat)
-                  RUBIKS.MATRIX.Transpose(cw)
-                  RUBIKS.MATRIX.ReverseRows(cw)
-
-            layer.map = RUBIKS.MATRIX.ToTable(mat)
-            layer.ccw = RUBIKS.MATRIX.ToTable(ccw)
-            layer.cw = RUBIKS.MATRIX.ToTable(cw)
-        end
-
-        data.CREATE = function()
-            local puzzle = {}
-
-            local index = 0
-            for x = 1, size do
-                for z = 1, size do
-                    for y = 1, size do
-                        local ignore = (x > 1 and x < size) and (z > 1 and z < size) and (y > 1 and y < size)
-
-                        index = index + 1
-                        if ignore then
-                            puzzle[index] = false
-                        else
-                            puzzle[index] = {
-                                id = index,
-                                sub = {},
-                                pos = Vector(-x*2 + size + 1, y*2 - size - 1, -z*2 + size + 1) * 6,
-                                ang = Angle()
-                            }
-                        end
-                    end
-                end
-            end
-
-            for key, layer in pairs(data.MASTER) do
-                if not layer.id then continue end
-                for _, id in ipairs(layer.map) do
-                    puzzle[id].sub[layer.id] = key
-                end
-            end
-
-            return puzzle
         end
     end
 
@@ -160,16 +55,37 @@ end
 
 
 ----------------------------------------------------------------
-function META:BuildPhysics()
-    if not self.RUBIKS_DATA then return end
+if SERVER then
+    function META:HandleInput(ply, trace)
+        local pos, dir = self:CubeTrace(trace)
+        if not pos or not dir then return end
 
-    self:PhysicsInitConvex(self.RUBIKS_DATA.HULL)
-    self:SetMoveType(MOVETYPE_CUSTOM)
-    self:SetSolid(SOLID_VPHYSICS)
-    self:EnableCustomCollisions(true)
+        local send = {}
+        if ply:KeyDown(IN_SPEED) then
+            local row, col, rneg, cneg = self:CubeTraceLayers(pos, dir)
+            if not row or not col or not rneg or not cneg then return end
 
-    if CLIENT then
-        self:SetRenderBounds(self.RUBIKS_DATA.MINS, self.RUBIKS_DATA.MAXS)
+            if ply:KeyDown(IN_ATTACK) then
+                send.key = row
+                send.rot = rneg
+            else
+                send.key = col
+                send.rot = cneg
+            end
+        else
+            local side = self:CubeTraceSide(dir)
+            if not side then return end
+
+            send.key = side
+            send.rot = ply:KeyDown(IN_ATTACK) and 1 or -1
+        end
+
+        net.Start("RUBIKS.MOVE")
+            net.WriteEntity(self)
+            net.WriteTable({ send })
+        net.Broadcast()
+
+        return send
     end
 end
 
@@ -260,41 +176,6 @@ end
 
 
 ----------------------------------------------------------------
-if SERVER then
-    function META:HandleInput(ply, trace)
-        local pos, dir = self:CubeTrace(trace)
-        if not pos or not dir then return end
-
-        local send = {}
-        if ply:KeyDown(IN_SPEED) then
-            local row, col, rneg, cneg = self:CubeTraceLayers(pos, dir)
-            if not row or not col or not rneg or not cneg then return end
-
-            if ply:KeyDown(IN_ATTACK) then
-                send.key = row
-                send.rot = rneg
-            else
-                send.key = col
-                send.rot = cneg
-            end
-        else
-            local side = self:CubeTraceSide(dir)
-            if not side then return end
-
-            send.key = side
-            send.rot = ply:KeyDown(IN_ATTACK) and 1 or -1
-        end
-
-        net.Start("RUBIKS.MOVE")
-            net.WriteEntity(self)
-            net.WriteTable({ send })
-        net.Broadcast()
-
-        return send
-    end
-end
-
-
 ----------------------------------------------------------------
 if SERVER then return end
 
@@ -343,7 +224,7 @@ function META:DoRotation()
     local PUZZLE = self.RUBIKS_PUZZLE
     local TASK = self.RUBIKS_TASK
 
-    local rate = math.min(#self.RUBIKS_QUEUE + (RUBIKS.ANIM_SPEED or 1) + 1, 6)
+    local rate = self:GetAnimationSpeed() or 1
     TASK.tween = math.min(TASK.tween + FrameTime()*rate, 1)
 
     local rotation = HELPER.SmoothStep(TASK.tween)*90
@@ -397,4 +278,125 @@ function META:Debug()
         local pos = self:GetPos():ToScreen()
         draw.SimpleText(self, "TargetIDSmall", pos.x, pos.y, Color(255, 255, 255), 1)
     cam.End2D()
+end
+
+
+----------------------------------------------------------------
+local keys = {
+    f = { id = 1, dir = Vector(1, 0, 0) },
+    b = { id = 2, dir = Vector(-1, 0, 0) },
+    r = { id = 3, dir = Vector(0, 1, 0) },
+    l = { id = 4, dir = Vector(0, -1, 0) },
+    d = { id = 5, dir = Vector(0, 0, -1) },
+    u = { id = 6, dir = Vector(0, 0, 1) },
+}
+
+
+----------------------------------------------------------------
+function TYPE.GenerateClientData(data)
+    data.MASTER = {}
+
+    local size = data.SIZE
+    local size_f = math.floor(size*0.5)
+    local size_c = math.ceil(size*0.5)
+
+    for k, side in pairs(keys) do
+        for l = 1, size_f do
+            local key = string.rep(k, l)
+
+            data.MASTER[key] = {
+                map = {},
+                ccw = {},
+                cw  = {},
+                dir = side.dir,
+            }
+
+            if l == 1 then
+                data.MASTER[key].id = side.id
+            end
+        end
+    end
+
+    local index = 0
+    for x = 1, size do
+        for z = 1, size do
+            for y = 1, size do
+                local ignore = (x > 1 and x < size) and (z > 1 and z < size) and (y > 1 and y < size)
+
+                index = index + 1
+                for key, _ in pairs(keys) do
+                    local xyz = (key == "f" and x or key == "b" and -x or key == "u" and z or key == "d" and -z or key == "l" and y or key == "r" and -y)
+                    local abs = math.abs(xyz)
+
+                    if xyz > 0 and abs <= size_f then
+                        local id = string.rep(key, xyz)
+                        table.insert(data.MASTER[id].map, ignore and 0 or index)
+                    end
+                    if xyz < 0 and abs > size_c then
+                        local id = string.rep(key, size + xyz + 1)
+                        table.insert(data.MASTER[id].map, ignore and 0 or index)
+                    end
+                end
+            end
+        end
+    end
+
+    for key, layer in pairs(data.MASTER) do
+        local mat = RUBIKS.MATRIX.FromTable(layer.map)
+        local side = string.sub(key, 1, 1)
+
+            if side == "b" then RUBIKS.MATRIX.ReverseRows(mat)
+        elseif side == "u" then RUBIKS.MATRIX.ReverseColumns(mat)
+        elseif side == "r" then RUBIKS.MATRIX.Transpose(mat)
+        elseif face == "l" then
+            RUBIKS.MATRIX.Transpose(mat)
+            RUBIKS.MATRIX.ReverseRows(mat)
+        end
+
+        local ccw = table.Copy(mat)
+              RUBIKS.MATRIX.Transpose(ccw)
+              RUBIKS.MATRIX.ReverseColumns(ccw)
+
+        local cw = table.Copy(mat)
+              RUBIKS.MATRIX.Transpose(cw)
+              RUBIKS.MATRIX.ReverseRows(cw)
+
+        layer.map = RUBIKS.MATRIX.ToTable(mat)
+        layer.ccw = RUBIKS.MATRIX.ToTable(ccw)
+        layer.cw = RUBIKS.MATRIX.ToTable(cw)
+    end
+
+    data.CREATE = function()
+        local puzzle = {}
+
+        local index = 0
+        for x = 1, size do
+            for z = 1, size do
+                for y = 1, size do
+                    local ignore = (x > 1 and x < size) and (z > 1 and z < size) and (y > 1 and y < size)
+
+                    index = index + 1
+                    if ignore then
+                        puzzle[index] = false
+                    else
+                        puzzle[index] = {
+                            id = index,
+                            sub = {},
+                            pos = Vector(-x*2 + size + 1, y*2 - size - 1, -z*2 + size + 1)*6,
+                            ang = Angle()
+                        }
+                    end
+                end
+            end
+        end
+
+        for key, layer in pairs(data.MASTER) do
+            if not layer.id then continue end
+            for _, id in ipairs(layer.map) do
+                puzzle[id].sub[layer.id] = key
+            end
+        end
+
+        return puzzle
+    end
 end

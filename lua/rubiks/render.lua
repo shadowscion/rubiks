@@ -16,7 +16,7 @@ end)
 
 
 ----------------------------------------------------------------
-CreateClientConVar("rubiks_draw_hud", "1", true, false)
+-- CreateClientConVar("rubiks_draw_hud", "1", true, false)
 CreateClientConVar("rubiks_animation_speed", "2", true, false)
 
 

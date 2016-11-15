@@ -10,29 +10,6 @@ RUBIKS.TYPES["SKEWB"] = TYPE
 
 
 ----------------------------------------------------------------
-local F = Vector(1, 0, 0)
-local L = Vector(0, -1, 0)
-local U = Vector(0, 0, 1)
-local B = -F
-local R = -L
-local D = -U
-
-local frac = 2/3
-
-local function rotateAroundAxis(angle, axis, rot)
-    local a = Angle(angle)
-    a:RotateAroundAxis(axis, rot)
-    return a
-end
-
-local function Shift(map)
-    local cw = { map[2], map[3], map[1], map[4], map[6], map[7],  map[5] }
-    local ccw = { map[3], map[1], map[2], map[4], map[7], map[5],  map[6] }
-    return ccw, cw
-end
-
-
-----------------------------------------------------------------
 function TYPE.GenerateData(size)
     local size   = 2
     local length = size*6
@@ -61,104 +38,15 @@ function TYPE.GenerateData(size)
     }
 
     if CLIENT then
-        data.MASTER = {
-            fl = { dir = Vector(frac, -frac, frac):GetNormal(),   map = { 1, 3, 5,  7,  8, 10, 12 } },
-            fr = { dir = -Vector(frac, frac, frac):GetNormal(),   map = { 1, 4, 5,  8,  7,  9, 11 } },
-            bl = { dir = Vector(-frac, frac, frac):GetNormal(),   map = { 2, 4, 5, 11, 12, 14,  8 } },
-            br = { dir = -Vector(-frac, -frac, frac):GetNormal(), map = { 2, 3, 5, 12, 11, 13,  7 } },
-            ll = { dir = Vector(-frac, -frac, frac):GetNormal(),  map = { 3, 2, 5, 12,  7, 13, 11 } },
-            lr = { dir = -Vector(frac, -frac, frac):GetNormal(),  map = { 3, 1, 5,  7, 12, 10,  8 } },
-            rl = { dir = Vector(frac, frac, frac):GetNormal(),    map = { 4, 1, 5,  8, 11,  9,  7 } },
-            rr = { dir = -Vector(-frac, frac, frac):GetNormal(),  map = { 4, 2, 5, 11,  8, 14, 12 } },
-            ul = { dir = -Vector(frac, frac, -frac):GetNormal(),  map = { 5, 3, 2, 12, 11,  7, 13 } },
-            ur = { dir = -Vector(-frac, frac, frac):GetNormal(),  map = { 5, 4, 2, 11, 12,  8, 14 } },
-            dl = { dir = -Vector(-frac, frac, frac):GetNormal(),  map = { 6, 3, 1, 10,  9, 13,  7 } },
-            dr = { dir = -Vector(frac, frac, -frac):GetNormal(),  map = { 6, 4, 1,  9, 10, 14,  8 } },
-        }
+        if TYPE.GenerateClientData then
+            TYPE.GenerateClientData(data)
+        else
+            data.MASTER = {}
 
-        for k, v in pairs(data.MASTER) do
-            v.ccw, v.cw = Shift(v.map)
-        end
-
-        data.CREATE = function()
-            local puzzle = {
-                [1] = {
-                    model = "center",
-                    ang   = F:Angle(),
-                    sub   = { "f" },
-                },
-                [2] = {
-                    model = "center",
-                    ang   = B:Angle(),
-                    sub   = { "b" },
-                },
-                [3] = {
-                    model = "center",
-                    ang   = L:Angle(),
-                    sub   = { "l" },
-                },
-                [4] = {
-                    model = "center",
-                    ang   = R:Angle(),
-                    sub   = { "r" },
-                },
-                [5] = {
-                    model = "center",
-                    ang   = U:Angle(),
-                    sub   = { "u" },
-                },
-                [6] = {
-                    model = "center",
-                    ang   = D:Angle(),
-                    sub   = { "d" },
-                },
-                [7] = {
-                    model = "corner",
-                    ang   = F:Angle(),
-                    sub   = { "f", "l", "u" },
-                },
-                [8] = {
-                    model = "corner",
-                    ang   = rotateAroundAxis(F:Angle(), F, -90),
-                    sub   = { "f", "u", "r" },
-                },
-                [9] = {
-                    model = "corner",
-                    ang   = rotateAroundAxis(F:Angle(), F, -180),
-                    sub   = { "f", "r", "d" },
-                },
-                [10] = {
-                    model = "corner",
-                    ang   = rotateAroundAxis(F:Angle(), F, -270),
-                    sub   = { "f", "d", "l" },
-                },
-                [11] = {
-                    model = "corner",
-                    ang   = B:Angle(),
-                    sub   = { "b", "r", "u" },
-                },
-                [12] = {
-                    model = "corner",
-                    ang   = rotateAroundAxis(B:Angle(), B, -90),
-                    sub   = { "b", "u", "l" },
-                },
-                [13] = {
-                    model = "corner",
-                    ang   = rotateAroundAxis(B:Angle(), B, -180),
-                    sub   = { "b", "l", "d" },
-                },
-                [14] = {
-                    model = "corner",
-                    ang   = rotateAroundAxis(B:Angle(), B, -270),
-                    sub   = { "b", "d", "r" },
-                }
-            }
-
-            for k, v in ipairs(puzzle) do
-                v.id = k
+            data.CREATE = function()
+                local puzzle = {}
+                return puzzle
             end
-
-            return puzzle
         end
     end
 
@@ -167,16 +55,25 @@ end
 
 
 ----------------------------------------------------------------
-function META:BuildPhysics()
-    if not self.RUBIKS_DATA then return end
+if SERVER then
+    function META:HandleInput(ply, trace)
+        local pos, dir = self:CubeTrace(trace)
+        if not pos or not dir then return end
 
-    self:PhysicsInitConvex(self.RUBIKS_DATA.HULL)
-    self:SetMoveType(MOVETYPE_CUSTOM)
-    self:SetSolid(SOLID_VPHYSICS)
-    self:EnableCustomCollisions(true)
+        local side, dir = self:CubeTraceLayers(pos, dir)
+        if not side or not dir then return end
 
-    if CLIENT then
-        self:SetRenderBounds(self.RUBIKS_DATA.MINS, self.RUBIKS_DATA.MAXS)
+        local send = {
+            key = side,
+            rot = dir == "ccw" and -1 or 1,
+        }
+
+        net.Start("RUBIKS.MOVE")
+            net.WriteEntity(self)
+            net.WriteTable({ send })
+        net.Broadcast()
+
+        return send
     end
 end
 
@@ -251,29 +148,6 @@ end
 
 
 ----------------------------------------------------------------
-if SERVER then
-    function META:HandleInput(ply, trace)
-        local pos, dir = self:CubeTrace(trace)
-        if not pos or not dir then return end
-
-        local side, dir = self:CubeTraceLayers(pos, dir)
-        if not side or not dir then return end
-
-        local send = {
-            key = side,
-            rot = dir == "ccw" and -1 or 1,
-        }
-
-        net.Start("RUBIKS.MOVE")
-            net.WriteEntity(self)
-            net.WriteTable({ send })
-        net.Broadcast()
-
-        return send
-    end
-end
-
-
 ----------------------------------------------------------------
 if SERVER then return end
 
@@ -320,7 +194,7 @@ function META:DoRotation()
     local PUZZLE = self.RUBIKS_PUZZLE
     local TASK = self.RUBIKS_TASK
 
-    local rate = math.min(#self.RUBIKS_QUEUE + (RUBIKS.ANIM_SPEED or 1) + 1, 6)
+    local rate = self:GetAnimationSpeed() or 1
     TASK.tween = math.min(TASK.tween + FrameTime()*rate, 1)
 
     local rotation = HELPER.SmoothStep(TASK.tween)*120
@@ -374,4 +248,131 @@ function META:Debug()
         local pos = self:GetPos():ToScreen()
         draw.SimpleText(self, "TargetIDSmall", pos.x, pos.y, Color(255, 255, 255), 1)
     cam.End2D()
+end
+
+
+----------------------------------------------------------------
+local F = Vector(1, 0, 0)
+local L = Vector(0, -1, 0)
+local U = Vector(0, 0, 1)
+local B = -F
+local R = -L
+local D = -U
+
+local frac = 2/3
+
+local function rotateAroundAxis(angle, axis, rot)
+    local a = Angle(angle)
+    a:RotateAroundAxis(axis, rot)
+    return a
+end
+
+local function Shift(map)
+    local cw = { map[2], map[3], map[1], map[4], map[6], map[7],  map[5] }
+    local ccw = { map[3], map[1], map[2], map[4], map[7], map[5],  map[6] }
+    return ccw, cw
+end
+
+
+----------------------------------------------------------------
+function TYPE.GenerateClientData(data)
+    data.MASTER = {
+        fl = { dir = Vector(frac, -frac, frac):GetNormal(),   map = { 1, 3, 5,  7,  8, 10, 12 } },
+        fr = { dir = -Vector(frac, frac, frac):GetNormal(),   map = { 1, 4, 5,  8,  7,  9, 11 } },
+        bl = { dir = Vector(-frac, frac, frac):GetNormal(),   map = { 2, 4, 5, 11, 12, 14,  8 } },
+        br = { dir = -Vector(-frac, -frac, frac):GetNormal(), map = { 2, 3, 5, 12, 11, 13,  7 } },
+        ll = { dir = Vector(-frac, -frac, frac):GetNormal(),  map = { 3, 2, 5, 12,  7, 13, 11 } },
+        lr = { dir = -Vector(frac, -frac, frac):GetNormal(),  map = { 3, 1, 5,  7, 12, 10,  8 } },
+        rl = { dir = Vector(frac, frac, frac):GetNormal(),    map = { 4, 1, 5,  8, 11,  9,  7 } },
+        rr = { dir = -Vector(-frac, frac, frac):GetNormal(),  map = { 4, 2, 5, 11,  8, 14, 12 } },
+        ul = { dir = -Vector(frac, frac, -frac):GetNormal(),  map = { 5, 3, 2, 12, 11,  7, 13 } },
+        ur = { dir = -Vector(-frac, frac, frac):GetNormal(),  map = { 5, 4, 2, 11, 12,  8, 14 } },
+        dl = { dir = -Vector(-frac, frac, frac):GetNormal(),  map = { 6, 3, 1, 10,  9, 13,  7 } },
+        dr = { dir = -Vector(frac, frac, -frac):GetNormal(),  map = { 6, 4, 1,  9, 10, 14,  8 } },
+    }
+
+    for k, v in pairs(data.MASTER) do
+        v.ccw, v.cw = Shift(v.map)
+    end
+
+    data.CREATE = function()
+        local puzzle = {
+            [1] = {
+                model = "center",
+                ang   = F:Angle(),
+                sub   = { "f" },
+            },
+            [2] = {
+                model = "center",
+                ang   = B:Angle(),
+                sub   = { "b" },
+            },
+            [3] = {
+                model = "center",
+                ang   = L:Angle(),
+                sub   = { "l" },
+            },
+            [4] = {
+                model = "center",
+                ang   = R:Angle(),
+                sub   = { "r" },
+            },
+            [5] = {
+                model = "center",
+                ang   = U:Angle(),
+                sub   = { "u" },
+            },
+            [6] = {
+                model = "center",
+                ang   = D:Angle(),
+                sub   = { "d" },
+            },
+            [7] = {
+                model = "corner",
+                ang   = F:Angle(),
+                sub   = { "f", "l", "u" },
+            },
+            [8] = {
+                model = "corner",
+                ang   = rotateAroundAxis(F:Angle(), F, -90),
+                sub   = { "f", "u", "r" },
+            },
+            [9] = {
+                model = "corner",
+                ang   = rotateAroundAxis(F:Angle(), F, -180),
+                sub   = { "f", "r", "d" },
+            },
+            [10] = {
+                model = "corner",
+                ang   = rotateAroundAxis(F:Angle(), F, -270),
+                sub   = { "f", "d", "l" },
+            },
+            [11] = {
+                model = "corner",
+                ang   = B:Angle(),
+                sub   = { "b", "r", "u" },
+            },
+            [12] = {
+                model = "corner",
+                ang   = rotateAroundAxis(B:Angle(), B, -90),
+                sub   = { "b", "u", "l" },
+            },
+            [13] = {
+                model = "corner",
+                ang   = rotateAroundAxis(B:Angle(), B, -180),
+                sub   = { "b", "l", "d" },
+            },
+            [14] = {
+                model = "corner",
+                ang   = rotateAroundAxis(B:Angle(), B, -270),
+                sub   = { "b", "d", "r" },
+            }
+        }
+
+        for k, v in ipairs(puzzle) do
+            v.id = k
+        end
+
+        return puzzle
+    end
 end

@@ -67,7 +67,7 @@ function HELPER.RotateVectorAroundAxis(vec, axis, degrees)
 
     local tx,ty,tz = vec.x,vec.y,vec.z
 
-    vec.x = (ca + (x^2)*(1-ca)) * tx + (x*y*(1-ca) - z*sa) * ty + (x*z*(1-ca) + y*sa) * tz
-    vec.y = (y*x*(1-ca) + z*sa) * tx + (ca + (y^2)*(1-ca)) * ty + (y*z*(1-ca) - x*sa) * tz
-    vec.z = (z*x*(1-ca) - y*sa) * tx + (z*y*(1-ca) + x*sa) * ty + (ca + (z^2)*(1-ca)) * tz
+    vec.x = (ca + (x^2)*(1-ca))*tx + (x*y*(1-ca) - z*sa)*ty + (x*z*(1-ca) + y*sa)*tz
+    vec.y = (y*x*(1-ca) + z*sa)*tx + (ca + (y^2)*(1-ca))*ty + (y*z*(1-ca) - x*sa)*tz
+    vec.z = (z*x*(1-ca) - y*sa)*tx + (z*y*(1-ca) + x*sa)*ty + (ca + (z^2)*(1-ca))*tz
 end

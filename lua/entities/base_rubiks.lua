@@ -35,10 +35,11 @@ RUBIKS.RegisterEntity("CUBE", "cube4x4", "4x4 Cube", 4)
 RUBIKS.RegisterEntity("CUBE", "cube5x5", "5x5 Cube", 5)
 
 --
-RUBIKS.RegisterEntity("TETRA", "pyraminx", "Pyraminx")
+RUBIKS.RegisterEntity("SKEWB", "skewb", "Skewb")
 
 --
-RUBIKS.RegisterEntity("SKEWB", "skewb", "Skewb")
+RUBIKS.RegisterEntity("TETRA", "pyraminx", "Pyraminx")
+RUBIKS.RegisterEntity("MEGAMINX", "megaminx", "Megaminx")
 
 
 ----------------------------------------------------------------
@@ -80,9 +81,21 @@ end
 function ENT:Initialize()
     self:SetModel("models/hunter/blocks/cube025x025x025.mdl")
     self:DrawShadow(false)
+    self:BuildPhysics()
+end
 
-    if self.BuildPhysics then
-        self:BuildPhysics()
+
+----------------------------------------------------------------
+function ENT:BuildPhysics()
+    if not self.RUBIKS_DATA then return end
+
+    self:PhysicsInitConvex(self.RUBIKS_DATA.HULL)
+    self:SetMoveType(MOVETYPE_CUSTOM)
+    self:SetSolid(SOLID_VPHYSICS)
+    self:EnableCustomCollisions(true)
+
+    if CLIENT then
+        self:SetRenderBounds(self.RUBIKS_DATA.MINS, self.RUBIKS_DATA.MAXS)
     end
 end
 
@@ -145,6 +158,17 @@ end
 
 ----------------------------------------------------------------
 if SERVER then
+    function ENT:ReverseHistory()
+        self.RUBIKS_HISTORY = self.RUBIKS_HISTORY or {}
+
+        local tbl = table.Reverse(table.Copy(self.RUBIKS_HISTORY))
+        for i, v in ipairs(tbl) do
+            v.rot = -v.rot
+        end
+
+        return tbl
+    end
+
     function ENT:AddHistory(data)
         self.RUBIKS_HISTORY = self.RUBIKS_HISTORY or {}
         table.insert(self.RUBIKS_HISTORY, data)
@@ -187,6 +211,12 @@ end
 ----------------------------------------------------------------
 function ENT:DoRotation()
     self.RUBIKS_TASK = nil
+end
+
+
+----------------------------------------------------------------
+function ENT:GetAnimationSpeed()
+    return math.min(#self.RUBIKS_QUEUE + (RUBIKS.ANIM_SPEED or 1) + 1, 10)
 end
 
 
@@ -237,7 +267,7 @@ function ENT:Draw()
         if halo.RenderedEntity() == self then return end
 
         if not RUBIKS.RENDER or not self.RUBIKS_PUZZLE then
-            self:DrawModel()
+            if self.Debug then self:Debug() else self:DrawModel() end
             return
         end
 
